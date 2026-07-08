@@ -15,39 +15,22 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
 (function () {
   const menuToggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.nav');
-  const backdrop = document.querySelector('.navbackdrop');
   if (!menuToggle || !nav) return;
 
   menuToggle.setAttribute('aria-expanded', 'false');
   nav.dataset.open = 'false';
 
-  const openMenu = () => {
-    nav.dataset.open = 'true';
-    menuToggle.setAttribute('aria-expanded', 'true');
-    if (backdrop) backdrop.classList.add('is-open');
-    document.body.classList.add('nav-open-lock');
-  };
-
-  const closeMenu = () => {
-    nav.dataset.open = 'false';
-    menuToggle.setAttribute('aria-expanded', 'false');
-    if (backdrop) backdrop.classList.remove('is-open');
-    document.body.classList.remove('nav-open-lock');
-  };
-
   menuToggle.addEventListener('click', () => {
     const open = nav.dataset.open === 'true';
-    open ? closeMenu() : openMenu();
-  });
-
-  if (backdrop) backdrop.addEventListener('click', closeMenu);
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeMenu();
+    nav.dataset.open = open ? 'false' : 'true';
+    menuToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
   });
 
   nav.querySelectorAll('a').forEach((a) => {
-    a.addEventListener('click', closeMenu);
+    a.addEventListener('click', () => {
+      nav.dataset.open = 'false';
+      menuToggle.setAttribute('aria-expanded', 'false');
+    });
   });
 })();
 
@@ -217,6 +200,7 @@ if (window.gsap && window.ScrollTrigger) {
       .from('.hero__image', { y: 30, duration: 1.1, ease: 'power3.out' }, '-=1.1')
       .from('.hero__badge', { y: 20, duration: 0.7, ease: 'power3.out' }, '-=0.5');
 
+    gsap.set('.hero__image img', { scale: 1.15 });
     gsap.to('.hero__image img', {
       yPercent: 8, ease: 'none',
       scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.6 },
