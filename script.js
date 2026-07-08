@@ -15,22 +15,39 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
 (function () {
   const menuToggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.nav');
+  const backdrop = document.querySelector('.navbackdrop');
   if (!menuToggle || !nav) return;
 
   menuToggle.setAttribute('aria-expanded', 'false');
   nav.dataset.open = 'false';
 
+  const openMenu = () => {
+    nav.dataset.open = 'true';
+    menuToggle.setAttribute('aria-expanded', 'true');
+    if (backdrop) backdrop.classList.add('is-open');
+    document.body.classList.add('nav-open-lock');
+  };
+
+  const closeMenu = () => {
+    nav.dataset.open = 'false';
+    menuToggle.setAttribute('aria-expanded', 'false');
+    if (backdrop) backdrop.classList.remove('is-open');
+    document.body.classList.remove('nav-open-lock');
+  };
+
   menuToggle.addEventListener('click', () => {
     const open = nav.dataset.open === 'true';
-    nav.dataset.open = open ? 'false' : 'true';
-    menuToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+    open ? closeMenu() : openMenu();
+  });
+
+  if (backdrop) backdrop.addEventListener('click', closeMenu);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
   });
 
   nav.querySelectorAll('a').forEach((a) => {
-    a.addEventListener('click', () => {
-      nav.dataset.open = 'false';
-      menuToggle.setAttribute('aria-expanded', 'false');
-    });
+    a.addEventListener('click', closeMenu);
   });
 })();
 
