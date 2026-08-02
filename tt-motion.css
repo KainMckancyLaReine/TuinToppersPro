@@ -144,10 +144,12 @@
 .tt-live .ic-house::after{animation:tt-ic-glow 3.6s ease-in-out infinite;}
 @keyframes tt-ic-glow{0%,100%{opacity:0;}50%{opacity:1;}}
 
-/* a line that grows under the card on hover, like a fresh edge cut */
-.bubble{position:relative;overflow:hidden;}
+/* a line that grows under the card on hover, like a fresh edge cut.
+   No overflow:hidden on the card itself — that would clip the price badge. */
+.bubble{position:relative;}
 .bubble::after{
-    content:'';position:absolute;left:0;bottom:0;height:3px;width:100%;
+    content:'';position:absolute;left:14px;right:14px;bottom:0;height:3px;
+    border-radius:3px 3px 0 0;
     background:linear-gradient(90deg,var(--green-600,#2a7a3a),var(--accent,#d9a82a));
     transform:scaleX(0);transform-origin:left;
     transition:transform .6s var(--tt-ease);

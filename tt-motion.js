@@ -198,6 +198,7 @@
                 var stem = el('span', 'tt-stem', '<i></i><b></b>');
                 stem.setAttribute('aria-hidden', 'true');
                 item.insertBefore(stem, item.firstChild);
+                item.classList.add('tt-faq');
                 item.style.setProperty('--d', (i * 0.09) + 's');
                 watch(item, { once: true });
             });
