@@ -454,10 +454,13 @@
    4b. THE FAQ — a stem that grows down each question as it opens
    ========================================================================== */
 
-.faq__item{position:relative;opacity:0;transform:translateY(16px);
+/* the hidden state is scoped to the class the script adds, so a page that
+   never loads tt-motion.js still shows every question */
+.faq__item{position:relative;}
+.faq__item.tt-faq{opacity:0;transform:translateY(16px);
     transition:opacity .6s var(--tt-ease),transform .6s var(--tt-ease);
     transition-delay:var(--d,0s);}
-.faq__item.is-in{opacity:1;transform:none;}
+.faq__item.tt-faq.is-in{opacity:1;transform:none;}
 .tt-stem{
     position:absolute;left:0;top:14px;bottom:14px;width:3px;
     pointer-events:none;z-index:1;
