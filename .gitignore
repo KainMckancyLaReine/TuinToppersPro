@@ -1,0 +1,6 @@
+.DS_Store
+**/.DS_Store
+
+# macOS maakt bij sync soms duplicaten met een spatie in de naam;
+# die breken git als ze in .git terechtkomen
+*\ [0-9]
