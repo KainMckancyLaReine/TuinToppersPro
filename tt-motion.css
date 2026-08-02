@@ -482,8 +482,11 @@
     transition:transform .55s var(--tt-ease) .25s;
 }
 .faq__item[data-open="true"] .tt-stem b{transform:scale(1) rotate(0);}
-.faq__q__icon{transition:transform .4s var(--tt-ease),color .3s ease;}
-.faq__item[data-open="true"] .faq__q__icon{transform:rotate(135deg);color:var(--green-600,#2a7a3a);}
+/* the page already turns the plus into a cross and recolours it when open —
+   overriding that here made the icon green on green and invisible */
+/* the question text steps aside so the stem never sits under it */
+.faq__item.tt-faq .faq__q{padding-left:18px;}
+.faq__item.tt-faq .faq__a p{padding-left:18px;}
 
 /* ==========================================================================
    5. PAKKETTEN — a plant that grows with the tier
@@ -492,10 +495,15 @@
 /* No overflow:hidden here — the "Meest gekozen" and "Volledige ontzorging"
    ribbons deliberately hang above the card and would be cut in half. */
 .pkg,.tt-has-plant{position:relative;}
+/* the plant is decoration behind the card's own content, so it can never sit
+   on the price column of the wider subscription rows */
+.pkg > *:not(.tt-plant),
+.tt-has-plant > *:not(.tt-plant){position:relative;z-index:1;}
 .tt-plant{
     position:absolute;right:16px;top:14px;width:42px;height:52px;
-    pointer-events:none;opacity:.5;
+    pointer-events:none;opacity:.4;z-index:0;
 }
+.subpkg__card .tt-plant{right:auto;left:50%;top:auto;bottom:8px;opacity:.22;}
 .tt-plant svg{display:block;width:100%;height:100%;overflow:visible;}
 .tt-plant .stem{
     fill:none;stroke:var(--green-600,#2a7a3a);stroke-width:2.4;stroke-linecap:round;
@@ -540,8 +548,11 @@
     transition-delay:var(--d,0s);
 }
 .tt-cf.is-in .tt-cf-li{opacity:1;transform:none;}
+/* same properties the page already eases, just with a softer curve */
 .cf__card{transition:transform .45s var(--tt-ease),box-shadow .45s var(--tt-ease);}
 .cf__card:hover{transform:translateY(-5px);}
+/* .cf__card has overflow:hidden of its own, so the plant would be clipped
+   against its ribbon — it does not get one */
 
 /* ==========================================================================
    6. PROJECTEN — mower stripes passing over the before/after
@@ -559,10 +570,11 @@
 /* a nudge on the handle so the slider invites a drag */
 .compare__handle{transition:transform .3s var(--tt-ease);}
 .compare.tt-hint .compare__handle{animation:tt-nudge 2.6s var(--tt-ease) 2;}
+/* the handle carries translateX(-50%) of its own, so the nudge keeps it */
 @keyframes tt-nudge{
-    0%,100%{transform:translateX(0);}
-    30%    {transform:translateX(11px);}
-    60%    {transform:translateX(-7px);}
+    0%,100%{transform:translateX(-50%);}
+    30%    {transform:translateX(calc(-50% + 11px));}
+    60%    {transform:translateX(calc(-50% - 7px));}
 }
 
 /* the seam that travels with the reveal, and what it lifts off the ground */
@@ -606,17 +618,51 @@
    ========================================================================== */
 
 .tt-tl{position:relative;}
-/* the page draws its own rule; ours grows over the top of it */
-.tt-trunk{
-    position:absolute;top:0;bottom:0;left:27px;width:4px;margin-left:-1px;
-    z-index:1;pointer-events:none;
+/* the page's straight rule is replaced by the plant, otherwise there would be
+   two lines running down the section */
+.tt-tl::before{display:none;}
+
+.tt-stem-wrap{
+    position:absolute;left:0;top:0;bottom:0;width:60px;
+    z-index:0;pointer-events:none;
 }
-.tt-trunk i{
-    display:block;width:100%;height:0;border-radius:4px;
-    background:linear-gradient(180deg,var(--green-500,#3e9a4f),var(--green-700,#1c5a2a));
-    box-shadow:0 0 12px rgba(62,154,79,.35);
-    transition:height .25s linear;
+.tt-stem-wrap svg{position:absolute;inset:0;width:60px;height:100%;overflow:visible;}
+.tt-stem-ghost{
+    fill:none;stroke:var(--line-strong,#d6ddd2);stroke-width:2;
+    stroke-linecap:round;stroke-linejoin:round;
 }
+.tt-stem-live{
+    fill:none;stroke:var(--green-600,#2a7a3a);stroke-width:3.5;
+    stroke-linecap:round;stroke-linejoin:round;
+}
+/* the shoot at the very top of the plant */
+.tt-stem-tip{
+    position:absolute;top:-9px;width:11px;height:11px;margin-left:-5.5px;
+    border-radius:60% 10% 60% 10%;background:var(--green-500,#3e9a4f);
+    transform:scale(0) rotate(-40deg);transform-origin:50% 100%;
+    transition:transform .6s var(--tt-ease) .2s;
+}
+.tt-stem-tip.is-open{transform:scale(1) rotate(0);}
+
+/* leaves along the stem, opening as the growth passes them */
+.tt-leafnode{
+    position:absolute;width:15px;height:15px;margin-left:-1px;
+    border-radius:60% 10% 60% 10%;background:var(--green-500,#3e9a4f);
+    transform:scale(0) rotate(-45deg);transform-origin:0 100%;
+    transition:transform .5s var(--tt-ease);
+}
+.tt-leafnode.alt{
+    border-radius:10% 60% 10% 60%;transform-origin:100% 100%;
+    margin-left:-14px;transform:scale(0) rotate(45deg);
+    background:var(--green-600,#2a7a3a);
+}
+.tt-leafnode.big{width:20px;height:20px;}
+.tt-leafnode.alt.big{margin-left:-19px;}
+.tt-leafnode.is-open{transform:scale(1) rotate(0);}
+.tt-leafnode.alt.is-open{transform:scale(1) rotate(0);}
+.tt-stem-wrap.tt-grown .tt-leafnode,
+.tt-stem-wrap.tt-grown .tt-stem-tip{transform:scale(1) rotate(0);}
+.tt-stem-wrap.tt-grown .tt-stem-live{stroke-dashoffset:0 !important;}
 .tt-tl-item{
     position:relative;
     opacity:0;transform:translateX(-18px);
@@ -633,19 +679,15 @@
     box-shadow:0 8px 20px -8px rgba(42,122,58,.6);
 }
 .tt-tl-item:hover .timeline__num{transform:scale(1.07);}
-/* a leaf unfurls beside every node */
-.tt-tl-leaf{
-    position:absolute;left:46px;top:12px;width:16px;height:16px;
-    border-radius:60% 10% 60% 10%;background:var(--green-500,#3e9a4f);
-    transform:scale(0) rotate(-40deg);transform-origin:0 100%;
-    transition:transform .6s var(--tt-ease) .35s;
+/* the numbered circles are the nodes of the plant: opaque, above the stem,
+   and filling green as the growth reaches them */
+.tt-tl-item .timeline__num{background:#fff;z-index:2;}
+.tt-tl-item.is-in .timeline__num::after{
+    content:'';position:absolute;inset:-6px;border-radius:50%;
+    border:1.5px solid rgba(62,154,79,.35);
+    animation:tt-node 1.2s var(--tt-ease);
 }
-.tt-tl-leaf.alt{
-    left:auto;right:auto;top:34px;
-    border-radius:10% 60% 10% 60%;transform-origin:100% 100%;
-    background:var(--accent,#d9a82a);width:12px;height:12px;
-}
-.tt-tl-item.is-in .tt-tl-leaf{transform:scale(1) rotate(0);}
+@keyframes tt-node{0%{opacity:.9;transform:scale(.8);}100%{opacity:0;transform:scale(1.25);}}
 
 /* ==========================================================================
    6c. ONZE BELOFTE — the promise icons keep working
@@ -669,6 +711,63 @@
 @keyframes tt-mail{0%,72%,100%{transform:translateY(0);}82%{transform:translateY(-4px);}}
 .tt-live .ic-team{animation:tt-team 3.6s ease-in-out infinite;}
 @keyframes tt-team{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+
+/* ==========================================================================
+   6d. HOME — the rest of the landing page
+   Every hidden start state below is scoped to a class the script adds, so a
+   page that never runs tt-motion.js still shows all of its content.
+   ========================================================================== */
+
+.tt-line{
+    display:block;
+    opacity:0;transform:translateY(22px);
+    transition:opacity .8s var(--tt-ease),transform .9s var(--tt-ease);
+    transition-delay:var(--d,0s);
+}
+.tt-hero.is-in .tt-line{opacity:1;transform:none;}
+
+.tt-up{
+    opacity:0;transform:translateY(18px);
+    transition:opacity .7s var(--tt-ease),transform .7s var(--tt-ease);
+    transition-delay:var(--d,0s);
+}
+.tt-hero.is-in .tt-up,
+.services__grid.is-in .tt-up{opacity:1;transform:none;}
+
+/* a call running down the contact strip */
+.tt-strip{position:relative;overflow:hidden;}
+/* the strip's own grid has no stacking context of its own, so it is lifted
+   above the bars — otherwise they would sit on top of the button */
+.tt-strip .contactstrip__inner{position:relative;z-index:1;}
+.tt-signal{
+    position:absolute;right:3%;top:50%;display:flex;gap:5px;align-items:flex-end;
+    transform:translateY(-50%);pointer-events:none;z-index:0;opacity:.22;
+    color:var(--green-600,#2a7a3a);
+}
+.tt-signal i{display:block;width:5px;border-radius:3px;background:currentColor;}
+.tt-signal i:nth-child(1){height:12px;}
+.tt-signal i:nth-child(2){height:20px;}
+.tt-signal i:nth-child(3){height:28px;}
+.tt-strip.is-live .tt-signal i{animation:tt-bars 1.5s ease-in-out infinite;}
+.tt-strip.is-live .tt-signal i:nth-child(2){animation-delay:.18s;}
+.tt-strip.is-live .tt-signal i:nth-child(3){animation-delay:.36s;}
+@keyframes tt-bars{0%,100%{transform:scaleY(.45);opacity:.5;}50%{transform:scaleY(1);opacity:1;}}
+.contactstrip__phone{transition:transform .4s var(--tt-ease);}
+.contactstrip__phone:hover{transform:translateX(3px);}
+
+/* the intro price stamps itself down */
+.tt-stamp{
+    opacity:0;transform:scale(1.28) rotate(-5deg);
+    transition:opacity .45s ease,transform .6s cubic-bezier(.34,1.5,.5,1);
+}
+.tt-stamp.is-in{opacity:1;transform:scale(1) rotate(0);}
+
+/* the about photo settles in */
+.tt-grow{
+    opacity:0;transform:scale(1.06);
+    transition:opacity .9s ease,transform 1.2s var(--tt-ease);
+}
+.tt-grow.is-in{opacity:1;transform:none;}
 
 /* ==========================================================================
    7. TRUSTBAR — the marks tick in
@@ -724,7 +823,11 @@
    10. RESPONSIVE
    ========================================================================== */
 
-@media (max-width:900px){
+@media (max-width:980px){
+    /* the site stacks the three steps into one column here and hides its own
+       connecting rule — the horizontal vine has to go with it, otherwise it
+       hangs over the first card as a loose green bar */
+    .tt-vine{display:none;}
     .tt-grass{height:56px;}
     .tt-scene{height:118px;left:12px;right:12px;bottom:12px;padding:10px 12px;}
     .tt-scene__stage{height:74px;}
@@ -749,12 +852,11 @@
     .tt-leaf{display:none;}
 }
 
-/* the site moves the timeline rule to left:21px at 640px — the trunk has to
-   follow it exactly or the two lines sit side by side */
+/* below 640px the site narrows the number to 44px, so the stem shifts left
+   by 6px to stay centred on it */
 @media (max-width:640px){
-    .tt-trunk{left:21px;}
+    .tt-stem-wrap{left:-6px;}
     .tt-tl-item{transform:translateX(-10px);}
-    .tt-tl-leaf{display:none;}
     .tt-seam i{display:none;}
 }
 
@@ -763,7 +865,8 @@
     .tt-scene *,.bubble__icon,.bubble__icon::after,
     .iconcard__icon{animation:none !important;}
     .tt-scene{opacity:1;transform:none;}
-    .tt-r,.tt-tl-item,.tt-tag,.iconcard,.faq__item.tt-faq{opacity:1;transform:none;}
-    .tt-trunk i{height:100%;}
-    .tt-tl-leaf{transform:scale(1) rotate(0);}
+    .tt-r,.tt-tl-item,.tt-tag,.iconcard,.faq__item.tt-faq,
+    .tt-line,.tt-up,.tt-stamp,.tt-grow{opacity:1;transform:none;}
+    .tt-stem-live{stroke-dashoffset:0 !important;}
+    .tt-leafnode,.tt-stem-tip{transform:scale(1) rotate(0);}
 }
