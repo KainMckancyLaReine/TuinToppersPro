@@ -199,8 +199,6 @@
                 stem.setAttribute('aria-hidden', 'true');
                 item.insertBefore(stem, item.firstChild);
                 item.classList.add('tt-faq');
-                item.style.setProperty('--d', (i * 0.09) + 's');
-                watch(item, { once: true });
             });
         });
     }
@@ -276,7 +274,7 @@
             plant.setAttribute('aria-hidden', 'true');
             card.classList.add('tt-has-plant');
             card.insertBefore(plant, card.firstChild);
-            watch(card, { once: true });
+            watch(plant, { once: true });
         });
     }
 
@@ -375,16 +373,7 @@
             }
         });
 
-        /* the tags under each project drop in one after another */
-        $$('.project-block').forEach(function (block) {
-            $$('.tag', block).forEach(function (tag, i) {
-                if (tag.dataset.ttTag) return;
-                tag.dataset.ttTag = '1';
-                tag.classList.add('tt-tag');
-                tag.style.setProperty('--d', (i * 0.09) + 's');
-            });
-            watch(block, { once: true });
-        });
+
     }
 
     /* ======================================================================
@@ -433,11 +422,9 @@
 
             tl.insertBefore(wrap, tl.firstChild);
 
-            items.forEach(function (item, i) {
-                item.classList.add('tt-tl-item');
-                item.style.setProperty('--d', (i * 0.05) + 's');
-                watch(item, { once: true });
-            });
+            /* the page already fades the items in; here they only get the
+               class the node styling hangs off */
+            items.forEach(function (item) { item.classList.add('tt-tl-item'); });
 
             if (REDUCED) { wrap.classList.add('tt-grown'); wrap.style.setProperty('--g', 1); return; }
 
@@ -461,6 +448,13 @@
                     lf.classList.toggle('is-open', g >= t);
                 });
                 if (tipNode) tipNode.classList.toggle('is-open', g > 0.02);
+                /* a numbered node fills once the stem has grown down to it */
+                var H = tl.offsetHeight || 1;
+                items.forEach(function (item) {
+                    var num = $('.timeline__num', item);
+                    if (!num) return;
+                    num.classList.toggle('is-node', g >= (item.offsetTop / H) - 0.02);
+                });
                 ticking = false;
             }
             window.addEventListener('scroll', function () {
@@ -478,9 +472,6 @@
     function initIconRow() {
         $$('.iconrow').forEach(function (row) {
             row.classList.add('tt-live');
-            $$('.iconcard', row).forEach(function (card, i) {
-                card.style.setProperty('--d', (i * 0.08) + 's');
-            });
             watch(row);
         });
     }
@@ -489,28 +480,10 @@
        6d. HOME — the rest of the landing page
        ====================================================================== */
     function initHome() {
-        /* the headline lands line by line */
-        $$('.hero__title .line').forEach(function (line, i) {
-            if (line.dataset.ttLine) return;
-            line.dataset.ttLine = '1';
-            line.classList.add('tt-line');
-            line.style.setProperty('--d', (0.15 + i * 0.13) + 's');
-        });
-        var hero = $('.hero');
-        if (hero) {
-            hero.classList.add('tt-hero');
-            watch(hero, { once: true });
-        }
-
-        /* the usps under the headline follow */
-        $$('.hero__usps > *').forEach(function (u, i) {
-            if (u.dataset.ttU) return;
-            u.dataset.ttU = '1';
-            u.classList.add('tt-up');
-            u.style.setProperty('--d', (0.6 + i * 0.1) + 's');
-        });
-
-        /* a call travelling down the contact strip */
+        /* The page already runs a full GSAP intro over the hero, the service
+           cards, the intro price, the about column and the contact strip copy.
+           Nothing here re-animates any of that — it would fight the timeline
+           and push elements over each other. Only the signal bars are new. */
         $$('.contactstrip').forEach(function (strip) {
             if ($('.tt-signal', strip)) return;
             var sig = el('span', 'tt-signal', '<i></i><i></i><i></i>');
@@ -519,60 +492,6 @@
             strip.classList.add('tt-strip');
             watch(strip);
         });
-
-        /* the service cards arrive one after another */
-        $$('.services__grid').forEach(function (grid) {
-            $$('.bubble', grid).forEach(function (b, i) {
-                if (b.dataset.ttB) return;
-                b.dataset.ttB = '1';
-                b.classList.add('tt-up');
-                b.style.setProperty('--d', (i * 0.08) + 's');
-            });
-            watch(grid, { once: true });
-        });
-
-        /* the intro price stamps itself onto the panel */
-        $$('.intropromo__price').forEach(function (p) {
-            p.classList.add('tt-stamp');
-            watch(p, { once: true });
-        });
-
-        /* about: the numbers count up and the photo settles in */
-        $$('.about__stats').forEach(function (stats) {
-            $$('b, strong, .about__stat b', stats).forEach(function (n, i) {
-                if (n.dataset.ttN) return;
-                var raw = (n.textContent || '').trim();
-                var m = raw.match(/^(\d+)(.*)$/);
-                if (!m) return;
-                n.dataset.ttN = '1';
-                var target = parseInt(m[1], 10), suffix = m[2] || '';
-                if (REDUCED || !target) return;
-                n.textContent = '0' + suffix;
-                countWhenSeen(n, target, suffix, i * 120);
-            });
-        });
-        $$('.about__visual').forEach(function (v) {
-            v.classList.add('tt-grow');
-            watch(v, { once: true });
-        });
-    }
-
-    function countWhenSeen(node, target, suffix, delay) {
-        if (!('IntersectionObserver' in window)) { node.textContent = target + suffix; return; }
-        new IntersectionObserver(function (entries, obs) {
-            entries.forEach(function (e) {
-                if (!e.isIntersecting) return;
-                obs.disconnect();
-                setTimeout(function () {
-                    var t0 = performance.now(), dur = 1300;
-                    (function tick(now) {
-                        var p = Math.min(1, (now - t0) / dur);
-                        node.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))) + suffix;
-                        if (p < 1) requestAnimationFrame(tick);
-                    })(t0);
-                }, delay || 0);
-            });
-        }, { threshold: 0.5 }).observe(node);
     }
 
     /* ======================================================================
@@ -627,8 +546,9 @@
        9. QUIET REVEALS for the blocks the page does not already animate
        ====================================================================== */
     function initReveals() {
-        var sels = ['.svcdetail__copy', '.project-block .compare-card__label',
-            '.contactstrip .wrap > *', '.about .wrap > *'];
+        /* every block the page used to leave alone is now covered by its own
+           GSAP timeline, so this list is intentionally empty */
+        var sels = [];
         var seen = [];
         sels.forEach(function (s) {
             $$(s).forEach(function (n) {
@@ -666,7 +586,7 @@
 
         /* nothing this file adds may leave content stuck out of sight */
         setTimeout(function () {
-            $$('.tt-r, .tt-scene, .tt-line, .tt-up, .tt-stamp, .tt-grow, .tt-tl-item, .faq__item.tt-faq')
+            $$('.tt-r, .tt-scene')
                 .forEach(function (n) {
                     if (n.classList.contains('is-in')) return;
                     /* anything already scrolled past must not stay hidden */

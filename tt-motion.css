@@ -456,13 +456,8 @@
    4b. THE FAQ — a stem that grows down each question as it opens
    ========================================================================== */
 
-/* the hidden state is scoped to the class the script adds, so a page that
-   never loads tt-motion.js still shows every question */
+/* the page's own timeline fades each question in — only the stem is ours */
 .faq__item{position:relative;}
-.faq__item.tt-faq{opacity:0;transform:translateY(16px);
-    transition:opacity .6s var(--tt-ease),transform .6s var(--tt-ease);
-    transition-delay:var(--d,0s);}
-.faq__item.tt-faq.is-in{opacity:1;transform:none;}
 .tt-stem{
     position:absolute;left:0;top:14px;bottom:14px;width:3px;
     pointer-events:none;z-index:1;
@@ -605,14 +600,6 @@
 .compare.tt-sweeping .compare__tag--before{opacity:.35;transform:scale(.92);}
 .compare.tt-sweeping .compare__tag--after{transform:scale(1.06);}
 
-/* the labels under each project drop in */
-.tt-tag{
-    opacity:0;transform:translateY(9px);
-    transition:opacity .5s ease,transform .5s var(--tt-ease);
-    transition-delay:var(--d,0s);
-}
-.project-block.is-in .tt-tag{opacity:1;transform:none;}
-
 /* ==========================================================================
    6b. WERKWIJZE — the timeline grows down like a vine
    ========================================================================== */
@@ -663,18 +650,12 @@
 .tt-stem-wrap.tt-grown .tt-leafnode,
 .tt-stem-wrap.tt-grown .tt-stem-tip{transform:scale(1) rotate(0);}
 .tt-stem-wrap.tt-grown .tt-stem-live{stroke-dashoffset:0 !important;}
-.tt-tl-item{
-    position:relative;
-    opacity:0;transform:translateX(-18px);
-    transition:opacity .7s var(--tt-ease),transform .7s var(--tt-ease);
-    transition-delay:var(--d,0s);
-}
-.tt-tl-item.is-in{opacity:1;transform:none;}
+.tt-tl-item{position:relative;}
 .tt-tl-item .timeline__num{
     transition:background .5s var(--tt-ease),color .5s ease,
                border-color .5s ease,transform .6s var(--tt-ease),box-shadow .5s ease;
 }
-.tt-tl-item.is-in .timeline__num{
+.tt-tl-item .timeline__num.is-node{
     background:var(--green-600,#2a7a3a);border-color:var(--green-600,#2a7a3a);color:#fff;
     box-shadow:0 8px 20px -8px rgba(42,122,58,.6);
 }
@@ -682,7 +663,7 @@
 /* the numbered circles are the nodes of the plant: opaque, above the stem,
    and filling green as the growth reaches them */
 .tt-tl-item .timeline__num{background:#fff;z-index:2;}
-.tt-tl-item.is-in .timeline__num::after{
+.tt-tl-item .timeline__num.is-node::after{
     content:'';position:absolute;inset:-6px;border-radius:50%;
     border:1.5px solid rgba(62,154,79,.35);
     animation:tt-node 1.2s var(--tt-ease);
@@ -693,14 +674,7 @@
    6c. ONZE BELOFTE — the promise icons keep working
    ========================================================================== */
 
-/* scoped to the class the script adds, so the promise cards are never left
-   invisible if tt-motion.js does not load */
-.iconrow.tt-live .iconcard{
-    opacity:0;transform:translateY(18px);
-    transition:opacity .7s var(--tt-ease),transform .7s var(--tt-ease);
-    transition-delay:var(--d,0s);
-}
-.iconrow.tt-live.is-in .iconcard{opacity:1;transform:none;}
+/* the page fades the promise cards in itself; only their icons are ours */
 .iconcard__icon{position:relative;}
 .tt-live .ic-gear{animation:tt-gear 9s linear infinite;}
 @keyframes tt-gear{to{transform:rotate(360deg);}}
@@ -717,22 +691,6 @@
    Every hidden start state below is scoped to a class the script adds, so a
    page that never runs tt-motion.js still shows all of its content.
    ========================================================================== */
-
-.tt-line{
-    display:block;
-    opacity:0;transform:translateY(22px);
-    transition:opacity .8s var(--tt-ease),transform .9s var(--tt-ease);
-    transition-delay:var(--d,0s);
-}
-.tt-hero.is-in .tt-line{opacity:1;transform:none;}
-
-.tt-up{
-    opacity:0;transform:translateY(18px);
-    transition:opacity .7s var(--tt-ease),transform .7s var(--tt-ease);
-    transition-delay:var(--d,0s);
-}
-.tt-hero.is-in .tt-up,
-.services__grid.is-in .tt-up{opacity:1;transform:none;}
 
 /* a call running down the contact strip */
 .tt-strip{position:relative;overflow:hidden;}
@@ -754,20 +712,6 @@
 @keyframes tt-bars{0%,100%{transform:scaleY(.45);opacity:.5;}50%{transform:scaleY(1);opacity:1;}}
 .contactstrip__phone{transition:transform .4s var(--tt-ease);}
 .contactstrip__phone:hover{transform:translateX(3px);}
-
-/* the intro price stamps itself down */
-.tt-stamp{
-    opacity:0;transform:scale(1.28) rotate(-5deg);
-    transition:opacity .45s ease,transform .6s cubic-bezier(.34,1.5,.5,1);
-}
-.tt-stamp.is-in{opacity:1;transform:scale(1) rotate(0);}
-
-/* the about photo settles in */
-.tt-grow{
-    opacity:0;transform:scale(1.06);
-    transition:opacity .9s ease,transform 1.2s var(--tt-ease);
-}
-.tt-grow.is-in{opacity:1;transform:none;}
 
 /* ==========================================================================
    7. TRUSTBAR — the marks tick in
@@ -865,8 +809,7 @@
     .tt-scene *,.bubble__icon,.bubble__icon::after,
     .iconcard__icon{animation:none !important;}
     .tt-scene{opacity:1;transform:none;}
-    .tt-r,.tt-tl-item,.tt-tag,.iconcard,.faq__item.tt-faq,
-    .tt-line,.tt-up,.tt-stamp,.tt-grow{opacity:1;transform:none;}
+    .tt-r{opacity:1;transform:none;}
     .tt-stem-live{stroke-dashoffset:0 !important;}
     .tt-leafnode,.tt-stem-tip{transform:scale(1) rotate(0);}
 }
