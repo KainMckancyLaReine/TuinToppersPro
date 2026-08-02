@@ -281,33 +281,160 @@
     }
 
     /* ======================================================================
-       6. PROJECTEN — mower stripes over the before/after, then a nudge
+       6. PROJECTEN — the transformation plays itself
+       Each before/after wipes open on its own the first time you reach it, so
+       you watch the garden change instead of having to discover the handle.
+       The moment you touch it, the animation gets out of the way for good.
        ====================================================================== */
     function initProjects() {
         $$('.compare').forEach(function (cmp, i) {
-            if ($('.tt-mow', cmp)) return;
+            if (cmp.dataset.ttCmp) return;
+            cmp.dataset.ttCmp = '1';
+
+            var after = $('.compare__after', cmp);
+            var handle = $('.compare__handle', cmp);
+            if (!after || !handle) return;
+
+            /* mower stripes passing over the card as it arrives */
             var mow = el('div', 'tt-mow');
             mow.setAttribute('aria-hidden', 'true');
             cmp.appendChild(mow);
             watch(mow, { once: true });
 
-            /* once the stripes have passed, invite the drag — but only if the
-               visitor has not already grabbed the handle themselves */
-            var touched = false;
-            ['pointerdown', 'touchstart'].forEach(function (ev) {
-                cmp.addEventListener(ev, function () { touched = true; cmp.classList.remove('tt-hint'); },
-                    { passive: true });
+            /* clippings lifting off the seam as it travels */
+            var debris = '';
+            for (var d = 0; d < 7; d++) {
+                debris += '<i style="top:' + (10 + d * 12) + '%;--d:' + (d * 0.13) + 's;' +
+                    '--dx:' + ((d % 2 ? -1 : 1) * (14 + d * 5)) + 'px"></i>';
+            }
+            var seam = el('div', 'tt-seam', debris);
+            seam.setAttribute('aria-hidden', 'true');
+            cmp.appendChild(seam);
+
+            var touched = false, raf = null;
+            function release() {
+                touched = true;
+                cancelAnimationFrame(raf);
+                cmp.classList.remove('tt-sweeping', 'tt-hint');
+            }
+            ['pointerdown', 'touchstart', 'mousedown'].forEach(function (ev) {
+                cmp.addEventListener(ev, release, { passive: true });
             });
+
+            function setPos(pct) {
+                after.style.clipPath = 'inset(0 0 0 ' + pct + '%)';
+                handle.style.left = pct + '%';
+                seam.style.left = pct + '%';
+                cmp.setAttribute('aria-valuenow', Math.round(pct));
+            }
+
+            /* out to "na", hold, then back to the middle ready for a drag */
+            function play() {
+                if (touched || REDUCED) return;
+                cmp.classList.add('tt-sweeping');
+                var OUT = 2400, HOLD = 900, BACK = 900;
+                var t0 = performance.now();
+                (function step(now) {
+                    if (touched) return;
+                    var t = now - t0;
+                    var pct;
+                    if (t < OUT) {
+                        var a = t / OUT;
+                        pct = 4 + (95 - 4) * (1 - Math.pow(1 - a, 3));
+                    } else if (t < OUT + HOLD) {
+                        pct = 95;
+                    } else if (t < OUT + HOLD + BACK) {
+                        var b = (t - OUT - HOLD) / BACK;
+                        pct = 95 - (95 - 50) * (1 - Math.pow(1 - b, 3));
+                    } else {
+                        setPos(50);
+                        cmp.classList.remove('tt-sweeping');
+                        cmp.classList.add('tt-hint');
+                        setTimeout(function () { cmp.classList.remove('tt-hint'); }, 5600);
+                        return;
+                    }
+                    setPos(pct);
+                    raf = requestAnimationFrame(step);
+                })(t0);
+            }
+
             if ('IntersectionObserver' in window && !REDUCED) {
                 new IntersectionObserver(function (entries, obs) {
                     entries.forEach(function (e) {
                         if (!e.isIntersecting) return;
                         obs.disconnect();
-                        setTimeout(function () { if (!touched) cmp.classList.add('tt-hint'); },
-                            2100 + i * 200);
+                        setTimeout(play, 700 + i * 160);
                     });
-                }, { threshold: 0.4 }).observe(cmp);
+                }, { threshold: 0.45 }).observe(cmp);
             }
+        });
+
+        /* the tags under each project drop in one after another */
+        $$('.project-block').forEach(function (block) {
+            $$('.tag', block).forEach(function (tag, i) {
+                if (tag.dataset.ttTag) return;
+                tag.dataset.ttTag = '1';
+                tag.classList.add('tt-tag');
+                tag.style.setProperty('--d', (i * 0.09) + 's');
+            });
+            watch(block, { once: true });
+        });
+    }
+
+    /* ======================================================================
+       6b. WERKWIJZE — the timeline grows down like a vine
+       ====================================================================== */
+    function initTimeline() {
+        $$('.timeline').forEach(function (tl) {
+            if ($('.tt-trunk', tl)) return;
+            var items = $$('.timeline__item', tl);
+            if (!items.length) return;
+
+            var trunk = el('div', 'tt-trunk', '<i></i>');
+            trunk.setAttribute('aria-hidden', 'true');
+            tl.insertBefore(trunk, tl.firstChild);
+            tl.classList.add('tt-tl');
+
+            items.forEach(function (item, i) {
+                item.classList.add('tt-tl-item');
+                item.style.setProperty('--d', (i * 0.05) + 's');
+                /* a leaf unfurls beside every node, alternating sides */
+                if (!$('.tt-tl-leaf', item)) {
+                    var leaf = el('span', 'tt-tl-leaf' + (i % 2 ? ' alt' : ''));
+                    leaf.setAttribute('aria-hidden', 'true');
+                    item.appendChild(leaf);
+                }
+                watch(item, { once: true });
+            });
+
+            /* the trunk tracks how far down the section you have read */
+            if (REDUCED) { trunk.style.setProperty('--g', 1); return; }
+            var fill = $('i', trunk), ticking = false;
+            function draw() {
+                var r = tl.getBoundingClientRect();
+                var vh = window.innerHeight || 800;
+                var g = (vh * 0.72 - r.top) / Math.max(1, r.height);
+                fill.style.height = (Math.max(0, Math.min(1, g)) * 100) + '%';
+                ticking = false;
+            }
+            window.addEventListener('scroll', function () {
+                if (!ticking) { ticking = true; requestAnimationFrame(draw); }
+            }, { passive: true });
+            window.addEventListener('resize', draw, { passive: true });
+            draw();
+        });
+    }
+
+    /* ======================================================================
+       6c. ONZE BELOFTE — each promise icon does its own small thing
+       ====================================================================== */
+    function initIconRow() {
+        $$('.iconrow').forEach(function (row) {
+            row.classList.add('tt-live');
+            $$('.iconcard', row).forEach(function (card, i) {
+                card.style.setProperty('--d', (i * 0.08) + 's');
+            });
+            watch(row);
         });
     }
 
@@ -393,6 +520,8 @@
         try { initPriceTable(); } catch (e) {}
         try { initCompareCards(); } catch (e) {}
         try { initProjects(); } catch (e) {}
+        try { initTimeline(); } catch (e) {}
+        try { initIconRow(); } catch (e) {}
         try { initTrust(); } catch (e) {}
         try { initHedge(); } catch (e) {}
         try { initReveals(); } catch (e) {}

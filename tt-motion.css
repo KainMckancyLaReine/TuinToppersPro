@@ -489,7 +489,9 @@
    5. PAKKETTEN — a plant that grows with the tier
    ========================================================================== */
 
-.pkg,.tt-has-plant{position:relative;overflow:hidden;}
+/* No overflow:hidden here — the "Meest gekozen" and "Volledige ontzorging"
+   ribbons deliberately hang above the card and would be cut in half. */
+.pkg,.tt-has-plant{position:relative;}
 .tt-plant{
     position:absolute;right:16px;top:14px;width:42px;height:52px;
     pointer-events:none;opacity:.5;
@@ -562,6 +564,111 @@
     30%    {transform:translateX(11px);}
     60%    {transform:translateX(-7px);}
 }
+
+/* the seam that travels with the reveal, and what it lifts off the ground */
+.tt-seam{
+    position:absolute;top:0;bottom:0;left:50%;width:0;z-index:5;
+    pointer-events:none;opacity:0;transition:opacity .4s ease;
+}
+.compare.tt-sweeping .tt-seam{opacity:1;}
+.tt-seam::before{
+    content:'';position:absolute;top:0;bottom:0;left:-9px;width:18px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+}
+.tt-seam i{
+    position:absolute;left:-3px;width:7px;height:5px;
+    border-radius:60% 10% 60% 10%;background:rgba(255,255,255,.9);
+    opacity:0;
+}
+.compare.tt-sweeping .tt-seam i{
+    animation:tt-debris 1.5s var(--tt-ease) infinite;animation-delay:var(--d);
+}
+@keyframes tt-debris{
+    0%  {opacity:0;transform:translate(0,0) rotate(0);}
+    18% {opacity:.95;}
+    100%{opacity:0;transform:translate(var(--dx),-26px) rotate(260deg);}
+}
+/* the tags react to which side is winning */
+.compare__tag{transition:opacity .5s ease,transform .5s var(--tt-ease);}
+.compare.tt-sweeping .compare__tag--before{opacity:.35;transform:scale(.92);}
+.compare.tt-sweeping .compare__tag--after{transform:scale(1.06);}
+
+/* the labels under each project drop in */
+.tt-tag{
+    opacity:0;transform:translateY(9px);
+    transition:opacity .5s ease,transform .5s var(--tt-ease);
+    transition-delay:var(--d,0s);
+}
+.project-block.is-in .tt-tag{opacity:1;transform:none;}
+
+/* ==========================================================================
+   6b. WERKWIJZE — the timeline grows down like a vine
+   ========================================================================== */
+
+.tt-tl{position:relative;}
+/* the page draws its own rule; ours grows over the top of it */
+.tt-trunk{
+    position:absolute;top:0;bottom:0;left:27px;width:4px;margin-left:-1px;
+    z-index:1;pointer-events:none;
+}
+.tt-trunk i{
+    display:block;width:100%;height:0;border-radius:4px;
+    background:linear-gradient(180deg,var(--green-500,#3e9a4f),var(--green-700,#1c5a2a));
+    box-shadow:0 0 12px rgba(62,154,79,.35);
+    transition:height .25s linear;
+}
+.tt-tl-item{
+    position:relative;
+    opacity:0;transform:translateX(-18px);
+    transition:opacity .7s var(--tt-ease),transform .7s var(--tt-ease);
+    transition-delay:var(--d,0s);
+}
+.tt-tl-item.is-in{opacity:1;transform:none;}
+.tt-tl-item .timeline__num{
+    transition:background .5s var(--tt-ease),color .5s ease,
+               border-color .5s ease,transform .6s var(--tt-ease),box-shadow .5s ease;
+}
+.tt-tl-item.is-in .timeline__num{
+    background:var(--green-600,#2a7a3a);border-color:var(--green-600,#2a7a3a);color:#fff;
+    box-shadow:0 8px 20px -8px rgba(42,122,58,.6);
+}
+.tt-tl-item:hover .timeline__num{transform:scale(1.07);}
+/* a leaf unfurls beside every node */
+.tt-tl-leaf{
+    position:absolute;left:46px;top:12px;width:16px;height:16px;
+    border-radius:60% 10% 60% 10%;background:var(--green-500,#3e9a4f);
+    transform:scale(0) rotate(-40deg);transform-origin:0 100%;
+    transition:transform .6s var(--tt-ease) .35s;
+}
+.tt-tl-leaf.alt{
+    left:auto;right:auto;top:34px;
+    border-radius:10% 60% 10% 60%;transform-origin:100% 100%;
+    background:var(--accent,#d9a82a);width:12px;height:12px;
+}
+.tt-tl-item.is-in .tt-tl-leaf{transform:scale(1) rotate(0);}
+
+/* ==========================================================================
+   6c. ONZE BELOFTE — the promise icons keep working
+   ========================================================================== */
+
+/* scoped to the class the script adds, so the promise cards are never left
+   invisible if tt-motion.js does not load */
+.iconrow.tt-live .iconcard{
+    opacity:0;transform:translateY(18px);
+    transition:opacity .7s var(--tt-ease),transform .7s var(--tt-ease);
+    transition-delay:var(--d,0s);
+}
+.iconrow.tt-live.is-in .iconcard{opacity:1;transform:none;}
+.iconcard__icon{position:relative;}
+.tt-live .ic-gear{animation:tt-gear 9s linear infinite;}
+@keyframes tt-gear{to{transform:rotate(360deg);}}
+.tt-live .ic-broom{animation:tt-broom 3.4s var(--tt-ease) infinite;transform-origin:70% 20%;}
+@keyframes tt-broom{0%,100%{transform:rotate(-9deg);}50%{transform:rotate(9deg);}}
+.tt-live .ic-recycle{animation:tt-gear 7s linear infinite;}
+.tt-live .ic-mail{animation:tt-mail 3.2s var(--tt-ease) infinite;}
+@keyframes tt-mail{0%,72%,100%{transform:translateY(0);}82%{transform:translateY(-4px);}}
+.tt-live .ic-team{animation:tt-team 3.6s ease-in-out infinite;}
+@keyframes tt-team{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 
 /* ==========================================================================
    7. TRUSTBAR — the marks tick in
@@ -642,9 +749,21 @@
     .tt-leaf{display:none;}
 }
 
+/* the site moves the timeline rule to left:21px at 640px — the trunk has to
+   follow it exactly or the two lines sit side by side */
+@media (max-width:640px){
+    .tt-trunk{left:21px;}
+    .tt-tl-item{transform:translateX(-10px);}
+    .tt-tl-leaf{display:none;}
+    .tt-seam i{display:none;}
+}
+
 @media (prefers-reduced-motion:reduce){
-    .tt-edge,.tt-leaf,.tt-mow{display:none;}
-    .tt-scene *,.bubble__icon,.bubble__icon::after{animation:none !important;}
+    .tt-edge,.tt-leaf,.tt-mow,.tt-seam{display:none;}
+    .tt-scene *,.bubble__icon,.bubble__icon::after,
+    .iconcard__icon{animation:none !important;}
     .tt-scene{opacity:1;transform:none;}
-    .tt-r{opacity:1;transform:none;}
+    .tt-r,.tt-tl-item,.tt-tag,.iconcard,.faq__item.tt-faq{opacity:1;transform:none;}
+    .tt-trunk i{height:100%;}
+    .tt-tl-leaf{transform:scale(1) rotate(0);}
 }
